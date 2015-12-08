@@ -187,7 +187,7 @@ class Server(object):
                     process = multiprocessing.Process(
                         name=process_name,
                         target=collector_process,
-                        args=(collector, self.metric_queue, self.log)
+                        args=(collector, self.metric_queue)
                     )
                     process.daemon = True
                     process.start()

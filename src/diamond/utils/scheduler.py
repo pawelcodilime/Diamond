@@ -21,9 +21,10 @@ from diamond.utils.signals import SIGALRMException
 from diamond.utils.signals import SIGHUPException
 
 
-def collector_process(collector, metric_queue, log):
+def collector_process(collector, metric_queue):
     """
     """
+    log = logging.getLogger('diamond')
     proc = multiprocessing.current_process()
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
