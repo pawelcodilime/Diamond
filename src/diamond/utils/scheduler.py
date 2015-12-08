@@ -8,7 +8,8 @@ import random
 import sys
 import signal
 
-from diamond.utils.classes import load_handlers
+from diamond.utils.classes import load_handlers, initialize_collector, \
+    load_dynamic_class
 from diamond.utils.config import load_config
 
 try:
@@ -20,11 +21,34 @@ from diamond.utils.signals import signal_to_exception
 from diamond.utils.signals import SIGALRMException
 from diamond.utils.signals import SIGHUPException
 
+from diamond.handler.Handler import Handler
 
-def collector_process(collector, metric_queue):
+def collector_process(collector_classes, collector_name, process_name, configfile, metric_queue):
     """
     """
     log = logging.getLogger('diamond')
+
+    QueueHandler = load_dynamic_class(
+        'diamond.handler.queue.QueueHandler',
+        Handler
+    )
+
+    config = load_config(configfile)
+
+    handler_queue = QueueHandler(
+        config=config, queue=metric_queue, log=log)
+
+    collector = initialize_collector(
+        collector_classes[collector_name],
+        name=process_name,
+        configfile=configfile,
+        handlers=[handler_queue])
+
+    if collector is None:
+        log.error('Failed to load collector %s',
+                       process_name)
+        return
+
     proc = multiprocessing.current_process()
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
