@@ -46,7 +46,6 @@ class Server(object):
         # Initialize Members
         self.configfile = configfile
         self.config = None
-        self.handlers = []
         self.handler_queue = []
         self.modules = {}
         self.metric_queue = None
@@ -97,16 +96,6 @@ class Server(object):
             self.log.critical('handlers missing from server section in config')
             sys.exit(1)
 
-        handlers = self.config['server'].get('handlers')
-        if isinstance(handlers, basestring):
-            handlers = [handlers]
-
-        # Prevent the Queue Handler from being a normal handler
-        if 'diamond.handler.queue.QueueHandler' in handlers:
-            handlers.remove('diamond.handler.queue.QueueHandler')
-
-        self.handlers = load_handlers(self.config, handlers)
-
         QueueHandler = load_dynamic_class(
             'diamond.handler.queue.QueueHandler',
             Handler
@@ -118,7 +107,7 @@ class Server(object):
         process = multiprocessing.Process(
             name="Handlers",
             target=handler_process,
-            args=(self.handlers, self.metric_queue, self.log),
+            args=(self.configfile, self.metric_queue),
         )
 
         process.daemon = True

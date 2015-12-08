@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import logging
 import time
 import math
 import multiprocessing
@@ -7,6 +7,9 @@ import os
 import random
 import sys
 import signal
+
+from diamond.utils.classes import load_handlers
+from diamond.utils.config import load_config
 
 try:
     from setproctitle import getproctitle, setproctitle
@@ -100,10 +103,24 @@ def collector_process(collector, metric_queue, log):
             break
 
 
-def handler_process(handlers, metric_queue, log):
+def handler_process(configfile, metric_queue):
+    config = load_config(configfile)
+
+    handlers = config['server'].get('handlers')
+    if isinstance(handlers, basestring):
+        handlers = [handlers]
+
+    # Prevent the Queue Handler from being a normal handler
+    if 'diamond.handler.queue.QueueHandler' in handlers:
+        handlers.remove('diamond.handler.queue.QueueHandler')
+
+    handlers = load_handlers(config, handlers)
+
     proc = multiprocessing.current_process()
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
+
+    log = logging.getLogger('diamond')
 
     log.debug('Starting process %s', proc.name)
 
