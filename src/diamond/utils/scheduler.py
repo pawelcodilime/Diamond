@@ -53,9 +53,9 @@ def collector_process(collector_classes, collector_name, process_name, configfil
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
 
-    signal.signal(signal.SIGALRM, signal_to_exception)
-    signal.signal(signal.SIGHUP, signal_to_exception)
-    signal.signal(signal.SIGUSR2, signal_to_exception)
+    # signal.signal(signal.SIGALRM, signal_to_exception)
+    # signal.signal(signal.SIGHUP, signal_to_exception)
+    # signal.signal(signal.SIGUSR2, signal_to_exception)
 
     interval = float(collector.config['interval'])
 
